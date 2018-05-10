@@ -20,11 +20,26 @@ class PlaySoundsViewController: UIViewController {
     @IBOutlet weak var reverbButton: UIButton!;
     @IBOutlet weak var stopButton: UIButton!;
     
+    var helper: Helper!;
+    
     var recordedAudioURL:URL!
     var audioFile:AVAudioFile!
     var audioEngine:AVAudioEngine!
     var audioPlayerNode: AVAudioPlayerNode!
     var stopTimer: Timer!
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        configureUI(.notPlaying);
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        helper = Helper(self);
+        setupAudio()
+    }
+
+    // MARK: Play Audio and Stop
     
     @IBAction func playSoundForButton(_ sender: UIButton) {
         switch(sender.tag) {
@@ -56,18 +71,5 @@ class PlaySoundsViewController: UIViewController {
         stopAudio();
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        configureUI(.notPlaying);
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupAudio()
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-    }
 
 }

@@ -12,10 +12,9 @@ import AVFoundation
 
 extension PlaySoundsViewController: AVAudioPlayerDelegate {
     
-    // MARK: Alerts
+    // MARK: Alert Messages
     
     struct Alerts {
-        static let DismissAlert = "Dismiss"
         static let RecordingDisabledTitle = "Recording Disabled"
         static let RecordingDisabledMessage = "You've disabled this app from recording your microphone. Check Settings."
         static let RecordingFailedTitle = "Recording Failed"
@@ -38,7 +37,7 @@ extension PlaySoundsViewController: AVAudioPlayerDelegate {
         do {
             audioFile = try AVAudioFile(forReading: recordedAudioUrl as URL)
         } catch {
-            showAlert(Alerts.AudioFileError, message: String(describing: error))
+            helper.showAlert(Alerts.AudioFileError, message: String(describing: error))
         }
     }
     
@@ -106,7 +105,7 @@ extension PlaySoundsViewController: AVAudioPlayerDelegate {
         do {
             try audioEngine.start()
         } catch {
-            showAlert(Alerts.AudioEngineError, message: String(describing: error))
+            helper.showAlert(Alerts.AudioEngineError, message: String(describing: error))
             return
         }
         
@@ -161,10 +160,5 @@ extension PlaySoundsViewController: AVAudioPlayerDelegate {
         echoButton.isEnabled = enabled
         reverbButton.isEnabled = enabled
     }
-    
-    func showAlert(_ title: String, message: String) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: Alerts.DismissAlert, style: .default, handler: nil))
-        self.present(alert, animated: true, completion: nil)
-    }
+
 }

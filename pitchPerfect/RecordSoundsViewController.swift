@@ -16,26 +16,41 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
     @IBOutlet weak var stopRecordingButton: UIButton!
     
     var audioRecorder: AVAudioRecorder!;
+    var helper: Helper!;
+    
+    // MARK: - Errors
+    
+    struct Alerts {
+        static let RecordingSavingFailed = "Recording failed";
+        static let RecordingSavingFailedMessage = "There has been an problem by saving your record. Please try again!";
+    }
+    
+    // MARK: - View Helper
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        stopRecordingButton.isEnabled = false;
-    
+        configureUI(false);
+        helper = Helper(self); // Init the Helper for Alerts
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
-        recordingLabel.text = "Tap to Record";
-        
+        resetText();
     }
     
     // MARK - UI Helper Method
     
+    func resetText() {
+        recordingLabel.text = "Tap to Record";
+    }
+    
     func configureUI(_ recording: Bool) {
+        stopRecordingButton.isHidden = !recording;
         stopRecordingButton.isEnabled = recording;
+        recordButton.isHidden = recording;
         recordButton.isEnabled = !recording;
         recordingLabel.text = recording ?
-            "Recording in progress..." : "Recording finished!";
+            "Recording in progress..." : "Recording finished! Please wait...";
     }
     
     // MARK: - Button Actions
@@ -71,7 +86,8 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
         if flag {
             performSegue(withIdentifier: "stopRecording", sender: audioRecorder.url)
         } else {
-            print("Ohhhhhh nooooooo")
+            helper.showAlert(Alerts.RecordingSavingFailed, message: Alerts.RecordingSavingFailedMessage);
+            resetText();
         }
     }
     
