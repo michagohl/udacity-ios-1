@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  RecordSoundsViewController.swift
 //  pitchPerfect
 //
 //  Created by Michael Gohl on 26.04.18.
@@ -7,40 +7,80 @@
 //
 
 import UIKit
+import AVFoundation
 
-class RecorderViewController: UIViewController {
+class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
 
     @IBOutlet weak var recordButton: UIButton!
-    
+    @IBOutlet weak var recordingLabel: UILabel!
     @IBOutlet weak var stopRecordingButton: UIButton!
+    
+    var audioRecorder: AVAudioRecorder!;
     
     override func viewDidLoad() {
         super.viewDidLoad()
         stopRecordingButton.isEnabled = false;
-        // Do any additional setup after loading the view, typically from a nib.
+    
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated);
+        recordingLabel.text = "Tap to Record";
+        
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    
+    // MARK - UI Helper Method
+    
+    func configureUI(_ recording: Bool) {
+        stopRecordingButton.isEnabled = recording;
+        recordButton.isEnabled = !recording;
+        recordingLabel.text = recording ?
+            "Recording in progress..." : "Recording finished!";
     }
-
-    @IBOutlet weak var recordingLabel: UILabel!
+    
+    // MARK: - Button Actions
     
     @IBAction func recordAudio(_ sender: Any) {
-        stopRecordingButton.isEnabled = true;
-        recordButton.isEnabled = false;
-        recordingLabel.text = "Recording in progress...";
+        configureUI(true);
+        let dirPath = NSSearchPathForDirectoriesInDomains(.documentDirectory,.userDomainMask, true)[0] as String
+        let recordingName = "recordedVoice.wav"
+        let pathArray = [dirPath, recordingName]
+        let filePath = URL(string: pathArray.joined(separator: "/"))
+        
+        let session = AVAudioSession.sharedInstance()
+        try! session.setCategory(AVAudioSessionCategoryPlayAndRecord, with:AVAudioSessionCategoryOptions.defaultToSpeaker)
+        
+        try! audioRecorder = AVAudioRecorder(url: filePath!, settings: [:])
+        audioRecorder.delegate = self;
+        audioRecorder.isMeteringEnabled = true
+        audioRecorder.prepareToRecord()
+        audioRecorder.record()
     }
     
     @IBAction func stopRecording(_ sender: Any) {
-        stopRecordingButton.isEnabled = false;
-        recordButton.isEnabled = true;
-        recordingLabel.text = "Recording finished!";
+        configureUI(false);
+        audioRecorder.stop();
+        let audioSession = AVAudioSession.sharedInstance();
+        try! audioSession.setActive(false);
+        
+    }
+    
+    // MARK: - Audio Recorder Delegate
+    
+    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        if flag {
+            performSegue(withIdentifier: "stopRecording", sender: audioRecorder.url)
+        } else {
+            print("Ohhhhhh nooooooo")
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "stopRecording" {
+            let playSoundsVC = segue.destination as! PlaySoundsViewController
+            let audioURL = sender as! URL;
+            playSoundsVC.recordedAudioUrl = audioURL;
+        }
     }
     
 }
